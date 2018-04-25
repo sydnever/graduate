@@ -1,0 +1,54 @@
+@startuml 
+scale 2700*2700
+
+skinparam{
+    defaultFontName Padauk
+}
+
+title gossip
+
+
+Message <|-- BootstrapInfo
+Message <|-- Request
+Message <|-- Response
+Message <|-- InfoStatus
+Message <|-- Info
+Service <|-- Gossip
+Request <-- Gossip
+Response <-- Gossip
+Info o-- Request
+InfoStatus o-- Request
+Info o-- Response
+InfoStatus o-- Response
+BootstrapInfo o-- Gossip
+
+BootstrapInfo : **repeated util.UnresolvedAddr addresses**
+BootstrapInfo : **util.hlc.Timestamp timestamp**
+
+Request : **int32 node_id**
+Request : **util.UnresolvedAddr addr** 
+Request : **map<int32, int64> high_water_stamps** 
+Request : **map<string, Info> delta** 
+Request : **bytes cluster_id** 
+
+Response : **int32 node_id**
+Response : **util.UnresolvedAddr addr **
+Response : **util.UnresolvedAddr alternate_addr **
+Response : **int32 alternate_node_id **
+Response : **map<string, Info> delta **
+Response : **map<int32, int64> high_water_stamps **
+
+InfoStatus : **map<string, Info> infos**
+
+Info : **roachpb.Value value **
+Info : **int64 orig_stamp**
+Info : **int64 ttl_stamp **
+Info : **uint32 hops **
+Info : **int32 node_id **
+Info : **int32 peer_id **
+
+class Gossip {
+  rpc Gossip (stream Request) returns (stream Response) {}
+}
+@enduml
+
